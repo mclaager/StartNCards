@@ -1,0 +1,11 @@
+{
+    "name": "Start_N_Cards",
+    "version_number": "0.0.2",
+    "website_url": "https://github.com/mclaager/StartNCards",
+    "description": "Alter the amount of cards players start with!",
+    "dependencies": [
+	"Pykess-Pick_N_Cards-0.2.4",
+        "willis81808-UnboundLib-3.1.1",
+	"BepInEx-BepInExPack_ROUNDS-5.4.1100"
+    ]
+}
