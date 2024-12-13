@@ -27,8 +27,6 @@ namespace StartNCards
 
         private const int maxPicks = 10;
 
-        private const string loggingPrefix = "[StartNCards]: ";
-
         internal static StartNCards instance;
 
         public static ConfigEntry<int> PicksConfig;
@@ -160,31 +158,30 @@ namespace StartNCards
         {
             if (!StartNCards.extraPicksInProgress && (PhotonNetwork.IsMasterClient || PhotonNetwork.OfflineMode))
             {
-                // Temporarily disable PickNCards to prevent it from affecting first pick by settings pick count to 0
+                // For the first round, set PickNCards' pick count to be StartNCards. 
                 if (!StartNCards.transmittedStartingPicks)
                 {
-#if DEBUG
-                    UnityEngine.Debug.Log(loggingPrefix + $"Transmitting to everyone's PickNCards starting picks of {StartNCards.picks}.");
-#endif
+                    Log($"Transmitting to everyone's PickNCards starting picks of {StartNCards.picks}.");
+
                     // Store PickNCards current value for later use
                     var picks = PickNCards.PickNCards.PicksConfig.Value;
                     pickNCardsStoredPicks = picks;
 
                     var draws = DrawNCards.DrawNCards.NumDrawsConfig.Value;
 
-                    // Manually network Sync settings to everyone as PickNCards picks is internal and sync is private
+                    // Manually network Sync settings to everyone as PickNCards picks is internal and sync is private.
+                    // This needs to be networked offline to ensure that the master client will set its own PickNCards.
                     NetworkingManager.RPC(typeof(PickNCards.PickNCards), "SyncSettings", new object[] { StartNCards.picks, draws });
 
                     yield return new WaitForSecondsRealtime(0.1f);
 
                     StartNCards.transmittedStartingPicks = true;
                 }
-                // Re-enable PickNCards
+                // Reset PickNCards to its original value
                 else if (!StartNCards.transmittedPickNCardsPicks)
                 {
-#if DEBUG
-                    UnityEngine.Debug.Log(loggingPrefix + $"Resetting everyone's PickNCards picks to {pickNCardsStoredPicks}.");
-#endif
+                    Log($"Resetting everyone's PickNCards picks to {pickNCardsStoredPicks}.");
+
                     var draws = DrawNCards.DrawNCards.NumDrawsConfig.Value;
 
                     // Manually network Sync settings to everyone as PickNCards picks is internal and sync is private
@@ -197,6 +194,13 @@ namespace StartNCards
             }
 
             yield break;
+        }
+
+        private static void Log(string message)
+        {
+#if DEBUG
+                    Debug.Log($"[{ModName}]: " + message);
+#endif
         }
     }
 }
